@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://humanglasswatcher.game/contracts/v1/action-offer.schema.json",
+  "title": "ActionOffer",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "actionId",
+    "verb",
+    "targetEntityIds",
+    "utilityHint",
+    "reasonCode"
+  ],
+  "properties": {
+    "actionId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,64}$"
+    },
+    "verb": {
+      "enum": [
+        "observe",
+        "approach",
+        "avoid",
+        "grab",
+        "eat",
+        "drink",
+        "throw",
+        "strike",
+        "cut",
+        "clean",
+        "wear",
+        "rest",
+        "play",
+        "signal",
+        "attempt_escape",
+        "speak"
+      ]
+    },
+    "targetEntityIds": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_-]{1,64}$"
+      }
+    },
+    "utilityHint": {
+      "type": "number",
+      "minimum": -100,
+      "maximum": 100
+    },
+    "reasonCode": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_]{0,63}$"
+    }
+  }
+}

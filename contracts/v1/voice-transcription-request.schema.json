@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://humanglasswatcher.game/contracts/v1/voice-transcription-request.schema.json",
+  "title": "VoiceTranscriptionRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "audioBase64", "mimeType", "durationSeconds"],
+  "properties": {
+    "contractVersion": {
+      "const": 1
+    },
+    "audioBase64": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000000
+    },
+    "mimeType": {
+      "enum": ["audio/wav", "audio/webm", "audio/ogg", "audio/mp4"]
+    },
+    "durationSeconds": {
+      "type": "number",
+      "minimum": 0.01,
+      "maximum": 30
+    },
+    "language": {
+      "type": ["string", "null"],
+      "pattern": "^[A-Za-z]{2,3}(?:-[A-Za-z]{2})?$"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "contractVersion": 1,
+  "turnId": "turn_42",
+  "spokenLine": "All right—roll it over here.",
+  "emotion": "joy",
+  "intensity": 0.62,
+  "selectedActionId": "play_ball_7",
+  "selectedIntent": "play",
+  "targetEntityIds": ["ball_7"],
+  "memoryNote": "The player invited me to play with the ball."
+}

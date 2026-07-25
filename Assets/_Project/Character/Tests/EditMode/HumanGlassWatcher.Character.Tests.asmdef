@@ -1,0 +1,23 @@
+{
+  "name": "HumanGlassWatcher.Character.Tests",
+  "rootNamespace": "HumanGlassWatcher.Character.Tests",
+  "references": [
+    "HumanGlassWatcher.Character"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ],
+  "versionDefines": [],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "noEngineReferences": true
+}

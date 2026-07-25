@@ -1,0 +1,219 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://humanglasswatcher.game/contracts/v1/item-spec.schema.json",
+  "title": "ItemSpec",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "resolverVersion",
+    "canonicalId",
+    "displayName",
+    "sourcePrompt",
+    "visual",
+    "physical",
+    "capabilities",
+    "tags",
+    "content"
+  ],
+  "properties": {
+    "contractVersion": {
+      "const": 1
+    },
+    "resolverVersion": {
+      "type": "string",
+      "pattern": "^v[0-9]+(?:\\.[0-9]+){0,2}$"
+    },
+    "canonicalId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_]{0,63}$"
+    },
+    "displayName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "sourcePrompt": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "authoredAssetId": {
+      "type": ["string", "null"],
+      "pattern": "^items/[a-z0-9_]+(?:/[a-z0-9_]+){1,4}$"
+    },
+    "visual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["archetype", "colorHex", "scale"],
+      "properties": {
+        "archetype": {
+          "enum": [
+            "authored",
+            "sphere",
+            "box",
+            "cylinder",
+            "bottle",
+            "food",
+            "cloth",
+            "tool",
+            "organic",
+            "idea_object"
+          ]
+        },
+        "colorHex": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}$"
+        },
+        "scale": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number",
+            "minimum": 0.05,
+            "maximum": 3.0
+          }
+        }
+      }
+    },
+    "physical": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "massKg",
+        "bounciness",
+        "softness",
+        "fragility",
+        "sharpness",
+        "dirtiness"
+      ],
+      "properties": {
+        "massKg": {
+          "type": "number",
+          "minimum": 0.001,
+          "maximum": 50
+        },
+        "bounciness": {
+          "$ref": "#/$defs/unitValue"
+        },
+        "softness": {
+          "$ref": "#/$defs/unitValue"
+        },
+        "fragility": {
+          "$ref": "#/$defs/unitValue"
+        },
+        "sharpness": {
+          "$ref": "#/$defs/unitValue"
+        },
+        "dirtiness": {
+          "$ref": "#/$defs/unitValue"
+        }
+      }
+    },
+    "consumable": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["nutrition", "hydration", "toxicity", "taste"],
+          "properties": {
+            "nutrition": {
+              "$ref": "#/$defs/signedValue"
+            },
+            "hydration": {
+              "$ref": "#/$defs/signedValue"
+            },
+            "toxicity": {
+              "$ref": "#/$defs/unitValue"
+            },
+            "taste": {
+              "$ref": "#/$defs/signedValue"
+            }
+          }
+        }
+      ]
+    },
+    "capabilities": {
+      "type": "array",
+      "maxItems": 24,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "grabbable",
+          "throwable",
+          "bouncy",
+          "edible",
+          "drinkable",
+          "swing_tool",
+          "sharp_edge",
+          "flexible_line",
+          "absorbent",
+          "cleaning_agent",
+          "light_source",
+          "comfort",
+          "wearable",
+          "container",
+          "lever",
+          "adhesive",
+          "flammable",
+          "dirty",
+          "toxic",
+          "fragile",
+          "entertainment"
+        ]
+      }
+    },
+    "tags": {
+      "type": "array",
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9_]{0,47}$"
+      }
+    },
+    "content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "labels"],
+      "properties": {
+        "decision": {
+          "enum": ["allow", "abstract", "deny"]
+        },
+        "labels": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "none",
+              "gross",
+              "violence",
+              "sexual",
+              "self_harm",
+              "illegal",
+              "hate",
+              "personal_data",
+              "copyright_risk"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "unitValue": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "signedValue": {
+      "type": "number",
+      "minimum": -1,
+      "maximum": 1
+    }
+  }
+}

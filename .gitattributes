@@ -1,0 +1,12 @@
+* text=auto
+
+*.cs text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.asmdef text eol=lf
+
+# Unity writes empty YAML scalar values with a trailing space.
+*.meta text eol=lf whitespace=-trailing-space
+*.unity text eol=lf whitespace=-trailing-space
+*.asset text eol=lf whitespace=-trailing-space

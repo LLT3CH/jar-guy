@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://humanglasswatcher.game/contracts/v1/memory-summary-request.schema.json",
+  "title": "MemorySummaryRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "residentId", "events"],
+  "properties": {
+    "contractVersion": {
+      "const": 1
+    },
+    "residentId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,64}$"
+    },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["eventId", "description"],
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      }
+    }
+  }
+}

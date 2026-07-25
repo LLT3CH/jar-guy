@@ -1,0 +1,8 @@
+{
+  "contractVersion": 1,
+  "residentId": "resident_1",
+  "summary": "The player responded to a request for food, and the resident offered cooperation.",
+  "facts": ["The player provided an apple when asked."],
+  "promises": ["The resident promised to share information."],
+  "sourceEventIds": ["evt_10", "evt_11"]
+}

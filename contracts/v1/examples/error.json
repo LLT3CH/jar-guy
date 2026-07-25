@@ -1,0 +1,10 @@
+{
+  "contractVersion": 1,
+  "error": {
+    "code": "invalid_request",
+    "message": "The request did not match contract v1.",
+    "retryable": false,
+    "requestId": "req_example",
+    "details": ["$.prompt: must have length >= 1"]
+  }
+}

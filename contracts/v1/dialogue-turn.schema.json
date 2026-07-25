@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://humanglasswatcher.game/contracts/v1/dialogue-turn.schema.json",
+  "title": "DialogueTurn",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "turnId",
+    "spokenLine",
+    "emotion",
+    "intensity",
+    "selectedActionId",
+    "selectedIntent",
+    "targetEntityIds",
+    "memoryNote"
+  ],
+  "properties": {
+    "contractVersion": {
+      "const": 1
+    },
+    "turnId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,64}$"
+    },
+    "spokenLine": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "emotion": {
+      "enum": [
+        "neutral",
+        "joy",
+        "curiosity",
+        "sadness",
+        "fear",
+        "anger",
+        "disgust",
+        "surprise",
+        "contempt",
+        "relief"
+      ]
+    },
+    "intensity": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "selectedActionId": {
+      "type": ["string", "null"],
+      "pattern": "^[A-Za-z0-9_-]{1,64}$"
+    },
+    "selectedIntent": {
+      "enum": [
+        "observe",
+        "approach",
+        "avoid",
+        "grab",
+        "eat",
+        "drink",
+        "throw",
+        "strike",
+        "cut",
+        "clean",
+        "wear",
+        "rest",
+        "play",
+        "signal",
+        "attempt_escape",
+        "speak"
+      ]
+    },
+    "targetEntityIds": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_-]{1,64}$"
+      }
+    },
+    "memoryNote": {
+      "type": "string",
+      "maxLength": 240
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "contractVersion": 1,
+  "resolverVersion": "v1.0.0",
+  "canonicalId": "apple",
+  "displayName": "Apple",
+  "sourcePrompt": "a crisp red apple",
+  "authoredAssetId": "items/food/apple",
+  "visual": {
+    "archetype": "authored",
+    "colorHex": "#C93636",
+    "scale": [0.22, 0.22, 0.22]
+  },
+  "physical": {
+    "massKg": 0.18,
+    "bounciness": 0.15,
+    "softness": 0.25,
+    "fragility": 0.35,
+    "sharpness": 0,
+    "dirtiness": 0.02
+  },
+  "consumable": {
+    "nutrition": 0.35,
+    "hydration": 0.12,
+    "toxicity": 0,
+    "taste": 0.65
+  },
+  "capabilities": [
+    "grabbable",
+    "throwable",
+    "edible"
+  ],
+  "tags": [
+    "food",
+    "fruit",
+    "sweet",
+    "vegetarian"
+  ],
+  "content": {
+    "decision": "allow",
+    "labels": [
+      "none"
+    ]
+  }
+}

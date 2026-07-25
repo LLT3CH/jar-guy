@@ -1,0 +1,19 @@
+{
+  "name": "HumanGlassWatcher.Gameplay",
+  "rootNamespace": "HumanGlassWatcher.Gameplay",
+  "references": [
+    "HumanGlassWatcher.Core",
+    "Unity.InputSystem",
+    "Unity.InputSystem.ForUI",
+    "UnityEngine.UI"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

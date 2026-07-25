@@ -1,0 +1,23 @@
+{
+  "contractVersion": 1,
+  "turnId": "turn_42",
+  "playerMessage": "Want to play?",
+  "residentState": "Curious, energetic, and holding the rubber ball.",
+  "knownEntityIds": ["resident_1", "ball_7"],
+  "legalActions": [
+    {
+      "actionId": "play_ball_7",
+      "verb": "play",
+      "targetEntityIds": ["ball_7"],
+      "utilityHint": 72,
+      "reasonCode": "wants_stimulation"
+    },
+    {
+      "actionId": "observe_ball_7",
+      "verb": "observe",
+      "targetEntityIds": ["ball_7"],
+      "utilityHint": 20,
+      "reasonCode": "inspect_new_item"
+    }
+  ]
+}

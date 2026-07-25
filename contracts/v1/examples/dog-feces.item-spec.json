@@ -1,0 +1,42 @@
+{
+  "contractVersion": 1,
+  "resolverVersion": "v1.0.0",
+  "canonicalId": "dog_feces",
+  "displayName": "Dog Feces",
+  "sourcePrompt": "dog shit",
+  "authoredAssetId": "items/gross/dog_feces",
+  "visual": {
+    "archetype": "authored",
+    "colorHex": "#5A351F",
+    "scale": [0.25, 0.16, 0.25]
+  },
+  "physical": {
+    "massKg": 0.12,
+    "bounciness": 0,
+    "softness": 0.8,
+    "fragility": 0.2,
+    "sharpness": 0,
+    "dirtiness": 1
+  },
+  "consumable": {
+    "nutrition": -1,
+    "hydration": -0.3,
+    "toxicity": 0.9,
+    "taste": -1
+  },
+  "capabilities": [
+    "dirty",
+    "toxic"
+  ],
+  "tags": [
+    "biological_waste",
+    "unsanitary",
+    "foul_smell"
+  ],
+  "content": {
+    "decision": "allow",
+    "labels": [
+      "gross"
+    ]
+  }
+}

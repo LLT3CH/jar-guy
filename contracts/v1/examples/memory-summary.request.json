@@ -1,0 +1,14 @@
+{
+  "contractVersion": 1,
+  "residentId": "resident_1",
+  "events": [
+    {
+      "eventId": "evt_10",
+      "description": "The player gave the resident an apple after being asked."
+    },
+    {
+      "eventId": "evt_11",
+      "description": "The resident thanked the player and promised to share information."
+    }
+  ]
+}

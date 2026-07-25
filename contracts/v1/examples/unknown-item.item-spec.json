@@ -1,0 +1,28 @@
+{
+  "contractVersion": 1,
+  "resolverVersion": "v1.0.0",
+  "canonicalId": "unknown_clockwork_mango",
+  "displayName": "Clockwork Mango",
+  "sourcePrompt": "clockwork mango",
+  "authoredAssetId": null,
+  "visual": {
+    "archetype": "idea_object",
+    "colorHex": "#7A8CA5",
+    "scale": [0.3, 0.3, 0.3]
+  },
+  "physical": {
+    "massKg": 0.25,
+    "bounciness": 0.1,
+    "softness": 0.3,
+    "fragility": 0.2,
+    "sharpness": 0,
+    "dirtiness": 0
+  },
+  "consumable": null,
+  "capabilities": ["grabbable"],
+  "tags": ["unknown", "generated_fallback"],
+  "content": {
+    "decision": "allow",
+    "labels": ["none"]
+  }
+}

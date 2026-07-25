@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://humanglasswatcher.game/contracts/v1/dialogue-request.schema.json",
+  "title": "DialogueRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "turnId",
+    "playerMessage",
+    "residentState",
+    "knownEntityIds",
+    "legalActions"
+  ],
+  "properties": {
+    "contractVersion": {
+      "const": 1
+    },
+    "turnId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,64}$"
+    },
+    "playerMessage": {
+      "type": "string",
+      "maxLength": 1000
+    },
+    "residentState": {
+      "type": "string",
+      "maxLength": 2000
+    },
+    "knownEntityIds": {
+      "type": "array",
+      "maxItems": 128,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_-]{1,64}$"
+      }
+    },
+    "legalActions": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "$ref": "https://humanglasswatcher.game/contracts/v1/action-offer.schema.json"
+      }
+    }
+  }
+}

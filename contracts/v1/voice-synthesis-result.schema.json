@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://humanglasswatcher.game/contracts/v1/voice-synthesis-result.schema.json",
+  "title": "VoiceSynthesisResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "audioBase64", "mimeType", "provider"],
+  "properties": {
+    "contractVersion": {
+      "const": 1
+    },
+    "audioBase64": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000000
+    },
+    "mimeType": {
+      "enum": ["audio/wav", "audio/mpeg", "audio/ogg"]
+    },
+    "provider": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{0,31}$"
+    }
+  }
+}

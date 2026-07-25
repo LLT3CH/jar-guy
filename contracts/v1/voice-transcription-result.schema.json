@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://humanglasswatcher.game/contracts/v1/voice-transcription-result.schema.json",
+  "title": "VoiceTranscriptionResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "transcript", "language", "durationSeconds", "provider"],
+  "properties": {
+    "contractVersion": {
+      "const": 1
+    },
+    "transcript": {
+      "type": "string",
+      "maxLength": 1000
+    },
+    "language": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2,3}(?:-[A-Za-z]{2})?$"
+    },
+    "durationSeconds": {
+      "type": "number",
+      "minimum": 0.01,
+      "maximum": 30
+    },
+    "provider": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{0,31}$"
+    }
+  }
+}
