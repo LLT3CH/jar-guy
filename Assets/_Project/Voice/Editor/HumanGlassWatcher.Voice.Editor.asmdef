@@ -1,0 +1,21 @@
+{
+  "name": "HumanGlassWatcher.Voice.Editor",
+  "rootNamespace": "HumanGlassWatcher.Voice.Editor",
+  "references": [
+    "HumanGlassWatcher.Voice",
+    "Unity.InputSystem",
+    "Unity.InputSystem.ForUI",
+    "UnityEngine.UI"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

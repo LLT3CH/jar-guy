@@ -1,9 +1,13 @@
+using System.IO;
 using System.Linq;
 using System.Threading;
 using HumanGlassWatcher.Core.Interactions;
+using HumanGlassWatcher.Core.Items;
 using HumanGlassWatcher.Core.Services;
 using HumanGlassWatcher.Gameplay.Items;
 using NUnit.Framework;
+using UnityEditor;
+using UnityEngine;
 
 namespace HumanGlassWatcher.Gameplay.Tests.EditMode
 {
@@ -123,6 +127,120 @@ namespace HumanGlassWatcher.Gameplay.Tests.EditMode
             Assert.That(unsupported.Status, Is.EqualTo(ItemResolutionStatus.Unsupported));
             Assert.That(new[] { empty, duplicate, unsafeResult, unsupported }.All(result =>
                 !string.IsNullOrWhiteSpace(result.Feedback)), Is.True);
+        }
+    }
+
+    public sealed class ProceduralItemVisualTests
+    {
+        [TestCase("apple", "Apple Stem")]
+        [TestCase("chocolate_cake", "Frosting")]
+        [TestCase("water_bottle", "Blue Bottle Cap")]
+        [TestCase("dog_feces", "Waste Coil Top")]
+        [TestCase("rubber_ball", "Ball Spot Front")]
+        [TestCase("baseball_bat", "Bat Barrel")]
+        [TestCase("hockey_stick", "Hockey Blade")]
+        [TestCase("blanket", "Blanket Tassel Left")]
+        [TestCase("rope", "Rope Knot Left")]
+        [TestCase("scissors", "Scissor Pivot")]
+        [TestCase("sponge", "Green Scrub Layer")]
+        [TestCase("flashlight", "Flashlight Lens")]
+        public void AuthoredCatalogItemBuildsARecognizableComposite(
+            string canonicalId,
+            string landmarkPart)
+        {
+            var factoryObject = new GameObject("Visual Test Factory");
+            try
+            {
+                var catalog = new LocalItemCatalog();
+                Assert.That(catalog.TryGet(canonicalId, out var definition), Is.True);
+                var factory = factoryObject.AddComponent<RuntimeItemFactory>();
+                factory.Configure(factoryObject.transform);
+
+                var item = factory.Spawn(definition, Vector3.zero);
+                var visual = item.GetComponent<ProceduralItemVisual>();
+
+                Assert.That(visual, Is.Not.Null);
+                Assert.That(visual.StyleId, Is.EqualTo(canonicalId));
+                Assert.That(visual.PartCount, Is.GreaterThanOrEqualTo(4));
+                Assert.That(
+                    item.transform.Find($"Visual_{canonicalId}/{landmarkPart}"),
+                    Is.Not.Null,
+                    $"{canonicalId} should include the readable landmark {landmarkPart}.");
+                Assert.That(item.GetComponent<Rigidbody>(), Is.Not.Null);
+                Assert.That(item.GetComponents<Collider>(), Is.Not.Empty);
+            }
+            finally
+            {
+                Object.DestroyImmediate(factoryObject);
+            }
+        }
+
+        [Test]
+        public void UnknownPromptUsesARecognizableIdeaObjectComposite()
+        {
+            var factoryObject = new GameObject("Idea Object Visual Test Factory");
+            try
+            {
+                var catalog = new LocalItemCatalog();
+                var result = catalog.ResolveAsync("tiny time machine", CancellationToken.None)
+                    .GetAwaiter().GetResult();
+                var factory = factoryObject.AddComponent<RuntimeItemFactory>();
+                factory.Configure(factoryObject.transform);
+
+                var item = factory.Spawn(result.Definition, Vector3.zero);
+                var visual = item.GetComponent<ProceduralItemVisual>();
+
+                Assert.That(visual.StyleId, Is.EqualTo("idea_object"));
+                Assert.That(item.transform.Find($"Visual_{result.Definition.CanonicalId}/Idea Parcel"), Is.Not.Null);
+                Assert.That(item.transform.Find($"Visual_{result.Definition.CanonicalId}/Question Stem"), Is.Not.Null);
+            }
+            finally
+            {
+                Object.DestroyImmediate(factoryObject);
+            }
+        }
+
+        [Test]
+        public void MaterialTemplatesReferenceUrpLitWithoutAlwaysIncludedShaders()
+        {
+            var opaque = Resources.Load<Material>("ProceduralMaterials/ProceduralOpaque");
+            var transparent = Resources.Load<Material>("ProceduralMaterials/ProceduralTransparent");
+
+            Assert.That(opaque, Is.Not.Null);
+            Assert.That(transparent, Is.Not.Null);
+            Assert.That(opaque.shader.name, Is.EqualTo("Universal Render Pipeline/Lit"));
+            Assert.That(transparent.shader.name, Is.EqualTo("Universal Render Pipeline/Lit"));
+            Assert.That(transparent.IsKeywordEnabled("_SURFACE_TYPE_TRANSPARENT"), Is.True);
+            Assert.That(transparent.renderQueue, Is.EqualTo(3000));
+
+            var opaqueDependencies = AssetDatabase.GetDependencies(
+                "Assets/_Project/Gameplay/Resources/ProceduralMaterials/ProceduralOpaque.mat",
+                true);
+            var transparentDependencies = AssetDatabase.GetDependencies(
+                "Assets/_Project/Gameplay/Resources/ProceduralMaterials/ProceduralTransparent.mat",
+                true);
+            Assert.That(opaqueDependencies.Any(path => path.EndsWith("Lit.shader")), Is.True);
+            Assert.That(transparentDependencies.Any(path => path.EndsWith("Lit.shader")), Is.True);
+
+            var projectRoot = Directory.GetParent(Application.dataPath).FullName;
+            var graphicsSettings = File.ReadAllText(
+                Path.Combine(projectRoot, "ProjectSettings", "GraphicsSettings.asset"));
+            var runtimeFactory = File.ReadAllText(
+                Path.Combine(
+                    projectRoot,
+                    "Assets",
+                    "_Project",
+                    "Gameplay",
+                    "Items",
+                    "RuntimeItemFactory.cs"));
+            Assert.That(
+                graphicsSettings,
+                Does.Not.Contain("933532a4fcc9baf4fa0491de14d08ed7"),
+                "URP Lit must not be globally always-included.");
+            Assert.That(
+                runtimeFactory,
+                Does.Not.Contain("Shader.Find"),
+                "Runtime visuals must rely on referenced material assets, not stripped shader lookup.");
         }
     }
 }

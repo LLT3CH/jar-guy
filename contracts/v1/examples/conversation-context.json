@@ -1,0 +1,15 @@
+{
+  "residentId": "resident_1",
+  "personality": "Wry, curious, cautious, values freedom, and dislikes being patronized.",
+  "memorySummary": "The player previously brought an apple after the resident asked for food.",
+  "recentTurns": [
+    {
+      "speaker": "player",
+      "text": "Do you remember the apple?"
+    },
+    {
+      "speaker": "resident",
+      "text": "Of course. You actually listened that time."
+    }
+  ]
+}

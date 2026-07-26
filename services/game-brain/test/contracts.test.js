@@ -15,6 +15,7 @@ const exampleSchemas = new Map([
   ["dog-feces.item-spec.json", "item-spec.schema.json"],
   ["unknown-item.item-spec.json", "item-spec.schema.json"],
   ["item-resolution.request.json", "item-resolution-request.schema.json"],
+  ["conversation-context.json", "conversation-context.schema.json"],
   ["dialogue.request.json", "dialogue-request.schema.json"],
   ["dialogue.turn.json", "dialogue-turn.schema.json"],
   ["memory-summary.request.json", "memory-summary-request.schema.json"],

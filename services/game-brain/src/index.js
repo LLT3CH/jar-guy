@@ -1,17 +1,13 @@
 import { TtlCache } from "./lib/cache.js";
 import { loadConfig } from "./config.js";
 import { GameBrain } from "./game-brain.js";
+import { createConfiguredProviders } from "./providers/provider-factory.js";
 import { createGameBrainServer } from "./server.js";
 
 const config = loadConfig();
 
-if (config.providerName !== "mock") {
-  throw new Error(
-    `Provider "${config.providerName}" is not configured. This foundation ships with the key-free "mock" provider only.`
-  );
-}
-
 const brain = new GameBrain({
+  providers: createConfiguredProviders(config),
   providerTimeoutMs: config.providerTimeoutMs,
   cache: new TtlCache({
     ttlMs: config.cacheTtlMs,

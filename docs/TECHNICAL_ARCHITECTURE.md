@@ -88,6 +88,12 @@ An `ItemSpec` contains:
 
 Prompt text never directly selects a prefab path. The resolver returns a schema-conforming spec, the client clamps numeric values, and the visual factory maps only approved archetypes and addresses.
 
+The current authored catalog is rendered by explicit low-poly composite builders under `Assets/_Project/Gameplay`. Each item keeps one authoritative Rigidbody and a simple sphere, capsule, box, or compound collider; decorative child meshes do not add physics colliders. This makes the item readable without changing its capability contract or multiplying collision cost.
+
+Opaque and transparent runtime colors clone two material templates stored under Gameplay `Resources`. Those assets directly reference URP Lit and its two required surface variants, so player builds retain the shader variants without runtime `Shader.Find` and without adding the full URP Lit shader to Graphics Settings' always-included list. Runtime clones are cached by packed color to bound material count. A focused test verifies the templates, shader reference, transparent keyword, and render queue.
+
+Gameplay maps item outcomes to the Character presentation assembly's public `ResidentPresentationController.SetReaction` API. Presentation owns the pose; Gameplay owns the item appraisal cue and badge. If the presentation controller is unavailable, Gameplay applies a short root motion/color fallback without taking ownership of Character state.
+
 ## Interaction model
 
 The client constructs an affordance graph from resident abilities, item capabilities, environment capabilities, and current state.
@@ -138,6 +144,10 @@ Voice is a pipeline, not a permanently open microphone:
 
 The client must support text-only play, permission denial, network loss, timeouts, and rate limits.
 
+The implemented slice follows that boundary under `Assets/_Project/Voice`. A runtime installer detects `JarLoop` after scene load and adds one idempotent, lower-left conversation panel without editing Gameplay source. It uses push-to-talk or typed input, a bounded session memory/personality context, exact validation of the one client-offered `speak_reply` action, and service-generated WAV playback. A standalone `VoiceConversationDemo` scene exercises the same controller.
+
+The local Node service defaults to deterministic no-key mock transcription, dialogue, and an honest non-speech WAV cue. Optional OpenAI adapters keep all authentication server-side and use multipart transcription, strict structured dialogue output, and server-configured speech synthesis. Invalid JSON, unsafe text, illegal action/target choices, timeouts, and malformed audio all fail closed to usable text/offline behavior. See `docs/AI_VOICE_MILESTONE.md` for setup and current gaps.
+
 ## Unknown-item visuals
 
 The slice uses three tiers:
@@ -147,6 +157,8 @@ The slice uses three tiers:
 3. a deliberately stylized “idea object” with icon, silhouette, label, and correct behavior.
 
 Runtime 3D generation is a later research track because latency, platform cost, topology, collision quality, intellectual-property filtering, and Steam disclosure all need proof.
+
+The implemented idea-object fallback currently uses a parcel/ribbon/question-mark composite. It communicates uncertainty but does not yet render a generated label or icon, and it is not a substitute for the schema-validated unknown-item resolver.
 
 ## Service and cost controls
 
@@ -167,6 +179,7 @@ Runtime 3D generation is a later research track because latency, platform cost, 
 - `Assets/_Project/Character` — resident state, planning, animation adapters
 - `Assets/_Project/UI` — lid search, captions, settings, accessibility
 - `Assets/_Project/Tests` — edit-mode and play-mode tests
+- `Assets/_Project/Voice` — microphone capture, conversation client, playback, runtime overlay, and standalone demo
 - `contracts` — versioned JSON schemas and examples
 - `services/game-brain` — resolver, dialogue, memory, moderation, voice adapters
 - `docs` — approved product and engineering direction

@@ -36,7 +36,7 @@ Prove the emotional and systemic loop before scaling the item catalog, art quali
 11. sponge
 12. flashlight
 
-Each item needs a placeholder visual, physics profile, capabilities, appraisal effects, and at least one meaningful action.
+Each item needs a recognizable lightweight prototype visual, physics profile, capabilities, appraisal effects, and at least one meaningful action. Generic gray boxes are not sufficient for the authored catalog.
 
 ### Required combinations
 
@@ -47,6 +47,20 @@ Each item needs a placeholder visual, physics profile, capabilities, appraisal e
 - flashlight → illumination, play, or signaling;
 - bat/hockey stick + jar/lid → an evaluated escape attempt;
 - dog feces + sponge/water → cleaning path with persistent disgust and hygiene consequences.
+
+### Gameplay implementation checkpoint — 2026-07-25
+
+The current gameplay slice implements recognizable low-poly composite visuals for all twelve catalog items. The silhouettes and details distinguish food, drink, waste, ball, bat, hockey stick, blanket, rope, scissors, sponge, and flashlight while keeping their capability-based physics and affordances authoritative. Unknown prompts use a deliberately styled idea parcel rather than an arbitrary prefab or generic catalog block.
+
+The jar now has a pedestal and glass highlight, the lid has a readable grip band, and Juniper is represented by the Character presentation rig with a lightweight Gameplay fallback target. Item drops produce an immediate reaction badge and invoke explicit inspect, celebrate, comfort, recoil, or disgust poses through `ResidentPresentationController.SetReaction`; the Gameplay motion/color cue remains a fallback when the presentation rig is absent. Newly unlocked item-to-item affordances produce a visible combination banner and celebrate pose; this includes the required ball plus bat/hockey-stick strike path.
+
+Remaining gaps are explicit:
+
+- the procedural meshes and adult target are prototype presentation, not final character or prop art;
+- gameplay reaction cues drive explicit Character presentation poses but not yet the Character system's full appraisal, needs, memory, or persistence;
+- cleaning, eating, injury, jar damage, escape progress, and long-lived hygiene consequences remain affordances rather than executed simulations;
+- save/load, voice, dialogue, and service-driven unknown-item specifications require the later integration passes;
+- Android device profiling and the 30-object stress target still require integrated build validation.
 
 ### Personality and state
 

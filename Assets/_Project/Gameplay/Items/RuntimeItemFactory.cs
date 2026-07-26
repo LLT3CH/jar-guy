@@ -1,7 +1,7 @@
 using System;
+using System.Collections.Generic;
 using HumanGlassWatcher.Core.Items;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace HumanGlassWatcher.Gameplay.Items
 {
@@ -23,17 +23,9 @@ namespace HumanGlassWatcher.Gameplay.Items
                 throw new ArgumentNullException(nameof(definition));
             }
 
-            var primitive = PrimitiveFor(definition.Archetype);
-            var itemObject = GameObject.CreatePrimitive(primitive);
+            var itemObject = new GameObject($"Item_{definition.CanonicalId}");
             itemObject.transform.SetParent(itemRoot != null ? itemRoot : transform, false);
             itemObject.transform.position = position;
-            itemObject.transform.localScale = definition.Scale;
-            itemObject.name = $"Item_{definition.CanonicalId}";
-
-            var renderer = itemObject.GetComponent<Renderer>();
-            renderer.sharedMaterial = PlaceholderMaterials.CreateOpaque(definition.Color);
-
-            var collider = itemObject.GetComponent<Collider>();
             var physicsMaterial = new PhysicsMaterial($"{definition.CanonicalId}_Physics")
             {
                 bounciness = definition.Bounciness,
@@ -41,7 +33,7 @@ namespace HumanGlassWatcher.Gameplay.Items
                 staticFriction = definition.Has(ItemCapability.Bouncy) ? 0.2f : 0.7f,
                 bounceCombine = PhysicsMaterialCombine.Maximum
             };
-            collider.material = physicsMaterial;
+            AddPhysicsColliders(itemObject, definition, physicsMaterial);
 
             var rigidbody = itemObject.AddComponent<Rigidbody>();
             rigidbody.mass = definition.MassKg;
@@ -49,94 +41,168 @@ namespace HumanGlassWatcher.Gameplay.Items
             rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             rigidbody.maxAngularVelocity = 18f;
 
-            if (definition.Has(ItemCapability.LightSource))
-            {
-                AddPlaceholderLight(itemObject);
-            }
-
             var spawnedItem = itemObject.AddComponent<SpawnedItem>();
             spawnedItem.Initialize(definition);
+            ProceduralItemVisualBuilder.Build(itemObject, definition);
             ItemSpawned?.Invoke(spawnedItem);
             return spawnedItem;
         }
 
-        private static PrimitiveType PrimitiveFor(VisualArchetype archetype)
+        private static void AddPhysicsColliders(
+            GameObject itemObject,
+            ItemDefinition definition,
+            PhysicsMaterial physicsMaterial)
         {
-            switch (archetype)
+            if (definition.CanonicalId == "hockey_stick")
+            {
+                var shaft = itemObject.AddComponent<BoxCollider>();
+                shaft.size = new Vector3(
+                    definition.Scale.x * 0.64f,
+                    definition.Scale.y * 1.75f,
+                    definition.Scale.z * 0.62f);
+                shaft.center = new Vector3(0f, definition.Scale.y * 0.08f, 0f);
+                shaft.material = physicsMaterial;
+
+                var blade = itemObject.AddComponent<BoxCollider>();
+                blade.size = new Vector3(
+                    definition.Scale.x * 2.65f,
+                    definition.Scale.y * 0.30f,
+                    definition.Scale.z * 0.90f);
+                blade.center = new Vector3(
+                    definition.Scale.x * 1.02f,
+                    definition.Scale.y * -0.79f,
+                    0f);
+                blade.material = physicsMaterial;
+                return;
+            }
+
+            if (definition.CanonicalId == "scissors")
+            {
+                var scissors = itemObject.AddComponent<BoxCollider>();
+                scissors.size = new Vector3(
+                    definition.Scale.x * 1.15f,
+                    definition.Scale.z * 1.85f,
+                    definition.Scale.y * 1.35f);
+                scissors.center = new Vector3(0f, definition.Scale.z * 0.04f, 0f);
+                scissors.material = physicsMaterial;
+                return;
+            }
+
+            Collider collider;
+            switch (definition.Archetype)
             {
                 case VisualArchetype.Sphere:
                 case VisualArchetype.Food:
                 case VisualArchetype.Organic:
-                    return PrimitiveType.Sphere;
+                    var sphere = itemObject.AddComponent<SphereCollider>();
+                    sphere.radius = Mathf.Max(definition.Scale.x, definition.Scale.y, definition.Scale.z) * 0.5f;
+                    collider = sphere;
+                    break;
+
                 case VisualArchetype.Cylinder:
                 case VisualArchetype.Bottle:
                 case VisualArchetype.Tool:
-                    return PrimitiveType.Cylinder;
-                default:
-                    return PrimitiveType.Cube;
-            }
-        }
+                    var capsule = itemObject.AddComponent<CapsuleCollider>();
+                    capsule.direction = 1;
+                    capsule.radius = Mathf.Max(definition.Scale.x, definition.Scale.z) * 0.46f;
+                    capsule.height = Mathf.Max(definition.Scale.y * 2f, capsule.radius * 2f);
+                    collider = capsule;
+                    break;
 
-        private static void AddPlaceholderLight(GameObject parent)
-        {
-            var lightObject = new GameObject("Placeholder_Beam");
-            lightObject.transform.SetParent(parent.transform, false);
-            lightObject.transform.localPosition = new Vector3(0f, 0.6f, 0f);
-            lightObject.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f);
-            var light = lightObject.AddComponent<Light>();
-            light.type = LightType.Spot;
-            light.range = 7f;
-            light.spotAngle = 42f;
-            light.intensity = 6f;
-            light.color = new Color(1f, 0.92f, 0.68f);
+                default:
+                    var box = itemObject.AddComponent<BoxCollider>();
+                    box.size = definition.Scale;
+                    collider = box;
+                    break;
+            }
+
+            collider.material = physicsMaterial;
         }
     }
 
     public static class PlaceholderMaterials
     {
-        private const string UrpLitShader = "Universal Render Pipeline/Lit";
-        private const string BuiltInLitShader = "Standard";
+        private const string OpaqueResourcePath = "ProceduralMaterials/ProceduralOpaque";
+        private const string TransparentResourcePath = "ProceduralMaterials/ProceduralTransparent";
+
+        private static readonly Dictionary<uint, Material> OpaqueCache = new();
+        private static readonly Dictionary<uint, Material> TransparentCache = new();
 
         public static Material CreateOpaque(Color color)
         {
-            var material = new Material(FindLitShader())
-            {
-                color = color,
-                name = $"Placeholder_{ColorUtility.ToHtmlStringRGB(color)}"
-            };
-            material.SetColor("_BaseColor", color);
-            return material;
+            return CreateFromTemplate(color, false);
         }
 
         public static Material CreateTransparent(Color color)
         {
-            var material = CreateOpaque(color);
-            material.name = "Placeholder_Glass";
-            material.SetFloat("_Surface", 1f);
-            material.SetFloat("_Blend", 0f);
-            material.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
-            material.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
-            material.SetFloat("_ZWrite", 0f);
-            material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            material.EnableKeyword("_ALPHAPREMULTIPLY_ON");
-            material.renderQueue = (int)RenderQueue.Transparent;
+            return CreateFromTemplate(color, true);
+        }
+
+        public static void ClearRuntimeCache()
+        {
+            DestroyCachedMaterials(OpaqueCache);
+            DestroyCachedMaterials(TransparentCache);
+        }
+
+        private static Material CreateFromTemplate(Color color, bool transparent)
+        {
+            var cache = transparent ? TransparentCache : OpaqueCache;
+            var key = ColorKey(color);
+            if (cache.TryGetValue(key, out var cached) && cached != null)
+            {
+                return cached;
+            }
+
+            var resourcePath = transparent ? TransparentResourcePath : OpaqueResourcePath;
+            var template = Resources.Load<Material>(resourcePath);
+            if (template == null)
+            {
+                throw new InvalidOperationException(
+                    $"Missing build-referenced gameplay material at Resources/{resourcePath}.mat.");
+            }
+
+            var material = new Material(template)
+            {
+                color = color,
+                name = transparent
+                    ? $"Procedural_Transparent_{ColorUtility.ToHtmlStringRGBA(color)}"
+                    : $"Procedural_Opaque_{ColorUtility.ToHtmlStringRGB(color)}",
+                hideFlags = HideFlags.DontSave
+            };
+            material.SetColor("_BaseColor", color);
+            cache[key] = material;
             return material;
         }
 
-        private static Shader FindLitShader()
+        private static uint ColorKey(Color color)
         {
-            var shader = Shader.Find(UrpLitShader);
-            if (shader == null)
+            Color32 packed = color;
+            return ((uint)packed.r << 24) |
+                   ((uint)packed.g << 16) |
+                   ((uint)packed.b << 8) |
+                   packed.a;
+        }
+
+        private static void DestroyCachedMaterials(Dictionary<uint, Material> cache)
+        {
+            foreach (var material in cache.Values)
             {
-                shader = Shader.Find(BuiltInLitShader);
+                if (material == null)
+                {
+                    continue;
+                }
+
+                if (Application.isPlaying)
+                {
+                    UnityEngine.Object.Destroy(material);
+                }
+                else
+                {
+                    UnityEngine.Object.DestroyImmediate(material);
+                }
             }
 
-            if (shader == null)
-            {
-                throw new InvalidOperationException("No supported lit shader is available.");
-            }
-
-            return shader;
+            cache.Clear();
         }
     }
 }

@@ -3,7 +3,8 @@
   "rootNamespace": "HumanGlassWatcher.Gameplay.Tests.PlayMode",
   "references": [
     "HumanGlassWatcher.Core",
-    "HumanGlassWatcher.Gameplay"
+    "HumanGlassWatcher.Gameplay",
+    "HumanGlassWatcher.Character.Presentation"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

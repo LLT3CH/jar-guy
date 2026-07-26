@@ -37,6 +37,33 @@ const dialogueEmotions = {
   observe: "curiosity"
 };
 
+function createMockAudioCueBase64() {
+  const sampleRate = 16_000;
+  const sampleCount = 4000;
+  const buffer = Buffer.alloc(44 + (sampleCount * 2));
+  buffer.write("RIFF", 0);
+  buffer.writeUInt32LE(buffer.length - 8, 4);
+  buffer.write("WAVE", 8);
+  buffer.write("fmt ", 12);
+  buffer.writeUInt32LE(16, 16);
+  buffer.writeUInt16LE(1, 20);
+  buffer.writeUInt16LE(1, 22);
+  buffer.writeUInt32LE(sampleRate, 24);
+  buffer.writeUInt32LE(sampleRate * 2, 28);
+  buffer.writeUInt16LE(2, 32);
+  buffer.writeUInt16LE(16, 34);
+  buffer.write("data", 36);
+  buffer.writeUInt32LE(sampleCount * 2, 40);
+  for (let index = 0; index < sampleCount; index += 1) {
+    const envelope = Math.min(1, index / 320, (sampleCount - index) / 320);
+    const sample = Math.sin((index / sampleRate) * Math.PI * 2 * 440) * 0.12 * envelope;
+    buffer.writeInt16LE(Math.round(sample * 32767), 44 + (index * 2));
+  }
+  return buffer.toString("base64");
+}
+
+export const MOCK_AUDIO_CUE_WAV_BASE64 = createMockAudioCueBase64();
+
 export class MockItemResolverProvider {
   name = "mock";
 
@@ -73,14 +100,28 @@ export class MockDialogueProvider {
         || left.actionId.localeCompare(right.actionId)
     )[0];
     const intent = action?.verb || "observe";
+    const playerMessage = String(request.playerMessage || "").trim();
+    const memory = request.conversationContext?.memorySummary || "";
+    let spokenLine = dialogueLines[intent];
+    if (/\b(?:hello|hi|hey)\b/i.test(playerMessage)) {
+      spokenLine = "Hello. The acoustics in this jar are strange, but I heard you.";
+    } else if (/\bremember\b/i.test(playerMessage)) {
+      spokenLine = memory
+        ? "I remember. You don't get to decide which parts matter to me."
+        : "Not yet. Give me something worth remembering.";
+    } else if (playerMessage) {
+      spokenLine = `I heard you say, "${playerMessage.slice(0, 120)}"`;
+    }
     return JSON.stringify({
-      spokenLine: dialogueLines[intent],
+      spokenLine,
       emotion: dialogueEmotions[intent] || "neutral",
       intensity: action ? Math.min(1, Math.max(0, Math.abs(action.utilityHint) / 100)) : 0.2,
       selectedActionId: action?.actionId ?? null,
-      memoryNote: action
-        ? `I chose ${intent} because of ${action.reasonCode}.`
-        : "No safe action was available."
+      memoryNote: playerMessage
+        ? `The player said: ${playerMessage.slice(0, 200)}`
+        : action
+          ? `I chose ${intent} because of ${action.reasonCode}.`
+          : "No safe action was available."
     });
   }
 }
@@ -115,7 +156,7 @@ export class MockSpeechProvider {
 
   async synthesize() {
     return {
-      audioBase64: "UklGRgAAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=",
+      audioBase64: MOCK_AUDIO_CUE_WAV_BASE64,
       mimeType: "audio/wav"
     };
   }

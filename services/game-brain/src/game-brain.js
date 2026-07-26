@@ -13,7 +13,10 @@ import {
   uniqueAllowed
 } from "./lib/values.js";
 import { RuleBasedModeration } from "./moderation.js";
-import { createMockProviders } from "./providers/mock-providers.js";
+import {
+  createMockProviders,
+  MOCK_AUDIO_CUE_WAV_BASE64
+} from "./providers/mock-providers.js";
 
 const CAPABILITIES = new Set([
   "grabbable", "throwable", "bouncy", "edible", "drinkable", "swing_tool",
@@ -368,7 +371,7 @@ export class GameBrain {
       name = providerName(this.providers.speech);
     } catch {
       candidate = {
-        audioBase64: "UklGRgAAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=",
+        audioBase64: MOCK_AUDIO_CUE_WAV_BASE64,
         mimeType: "audio/wav"
       };
       name = "offline_fallback";

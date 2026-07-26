@@ -28,6 +28,9 @@
       "type": "string",
       "maxLength": 2000
     },
+    "conversationContext": {
+      "$ref": "https://humanglasswatcher.game/contracts/v1/conversation-context.schema.json"
+    },
     "knownEntityIds": {
       "type": "array",
       "maxItems": 128,

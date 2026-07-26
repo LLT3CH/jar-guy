@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Linq;
+using HumanGlassWatcher.Character.Presentation;
 using HumanGlassWatcher.Core.Interactions;
 using HumanGlassWatcher.Gameplay.Input;
+using HumanGlassWatcher.Gameplay.Interactions;
 using HumanGlassWatcher.Gameplay.Items;
 using HumanGlassWatcher.Gameplay.Scene;
 using NUnit.Framework;
@@ -71,6 +73,10 @@ namespace HumanGlassWatcher.Gameplay.Tests.PlayMode
                 .Single(item => item.Definition.CanonicalId == "rubber_ball");
             var body = ball.GetComponent<Rigidbody>();
             Assert.That(body, Is.Not.Null);
+            var visual = ball.GetComponent<ProceduralItemVisual>();
+            Assert.That(visual, Is.Not.Null);
+            Assert.That(visual.StyleId, Is.EqualTo("rubber_ball"));
+            Assert.That(visual.PartCount, Is.GreaterThanOrEqualTo(4));
             var startY = body.position.y;
 
             for (var index = 0; index < 12; index++)
@@ -100,6 +106,32 @@ namespace HumanGlassWatcher.Gameplay.Tests.PlayMode
             Assert.That(
                 bootstrap.AffordanceTracker.Available.Any(action => action.Kind == AffordanceKind.Strike),
                 Is.True);
+            Assert.That(bootstrap.ReactionPresenter.LastCombination, Is.Not.Null);
+            Assert.That(bootstrap.ReactionPresenter.LastCombination.Value.Kind, Is.EqualTo(AffordanceKind.Strike));
+            Assert.That(bootstrap.ReactionPresenter.CombinationBanner.gameObject.activeSelf, Is.True);
+            Assert.That(bootstrap.ReactionPresenter.CombinationBanner.text, Does.Contain("STRIKE"));
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
+        public IEnumerator HazardDropTriggersAnObviousResidentReaction()
+        {
+            var bootstrap = Object.FindFirstObjectByType<JarLoopSceneBootstrap>();
+            var catalog = new LocalItemCatalog();
+            catalog.TryGet("dog_feces", out var hazard);
+
+            bootstrap.ItemFactory.Spawn(hazard, new Vector3(0f, 7.5f, 0f));
+            yield return null;
+
+            Assert.That(
+                bootstrap.ReactionPresenter.LastReaction,
+                Is.EqualTo(GameplayReactionKind.Disgusted));
+            Assert.That(bootstrap.ReactionPresenter.PresentationController, Is.Not.Null);
+            Assert.That(
+                bootstrap.ReactionPresenter.PresentationController.CurrentReaction,
+                Is.EqualTo(ResidentReaction.Disgust));
+            Assert.That(bootstrap.ReactionPresenter.ReactionBadge.text, Does.Contain("HAZARD"));
+            Assert.That(bootstrap.ReactionPresenter.ReactionBadge.color.r, Is.GreaterThan(0.9f));
             LogAssert.NoUnexpectedReceived();
         }
     }

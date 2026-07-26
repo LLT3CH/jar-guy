@@ -21,6 +21,7 @@ namespace HumanGlassWatcher.Gameplay.Scene
         public bool IsReady { get; private set; }
         public RuntimeItemFactory ItemFactory { get; private set; }
         public RuntimeAffordanceTracker AffordanceTracker { get; private set; }
+        public GameplayReactionPresenter ReactionPresenter { get; private set; }
         public LidSearchController LidController { get; private set; }
         public GameObject ResidentTarget { get; private set; }
 
@@ -67,9 +68,16 @@ namespace HumanGlassWatcher.Gameplay.Scene
 
             ui.Submit.onClick.AddListener(LidController.SubmitCurrentPrompt);
             ui.Cancel.onClick.AddListener(LidController.Cancel);
+            ReactionPresenter = systems.AddComponent<GameplayReactionPresenter>();
+            ReactionPresenter.Configure(ResidentTarget, ui.Feedback, ui.ReactionBadge, ui.CombinationBanner);
+
+            ItemFactory.ItemSpawned -= AffordanceTracker.Observe;
+            ItemFactory.ItemSpawned += ReactionPresenter.ObserveItem;
+            ItemFactory.ItemSpawned += AffordanceTracker.Observe;
             AffordanceTracker.Changed += affordances =>
             {
                 ui.Affordances.text = FormatAffordances(affordances);
+                ReactionPresenter.PresentAffordances(affordances);
             };
 
             IsReady = true;
@@ -135,6 +143,15 @@ namespace HumanGlassWatcher.Gameplay.Scene
                 new Color(0.10f, 0.14f, 0.19f));
             Object.Destroy(baseVisual.GetComponent<Collider>());
 
+            var pedestal = CreatePrimitive(
+                "Jar Pedestal",
+                PrimitiveType.Cylinder,
+                jar.transform,
+                new Vector3(0f, -0.10f, 0f),
+                new Vector3(3.55f, 0.10f, 3.55f),
+                new Color(0.035f, 0.045f, 0.065f));
+            Object.Destroy(pedestal.GetComponent<Collider>());
+
             var floor = new GameObject("Interior Floor Collision");
             floor.transform.SetParent(jar.transform, false);
             floor.transform.localPosition = new Vector3(0f, 0.22f, 0f);
@@ -151,6 +168,17 @@ namespace HumanGlassWatcher.Gameplay.Scene
             Object.Destroy(glass.GetComponent<Collider>());
             glass.GetComponent<Renderer>().sharedMaterial =
                 PlaceholderMaterials.CreateTransparent(new Color(0.66f, 0.88f, 1f, 0.14f));
+
+            var glassHighlight = CreatePrimitive(
+                "Glass Highlight",
+                PrimitiveType.Cube,
+                jar.transform,
+                new Vector3(-1.82f, JarHeight * 0.53f, -2.20f),
+                new Vector3(0.20f, JarHeight * 0.72f, 0.05f),
+                new Color(0.80f, 0.96f, 1f, 0.20f));
+            Object.Destroy(glassHighlight.GetComponent<Collider>());
+            glassHighlight.GetComponent<Renderer>().sharedMaterial =
+                PlaceholderMaterials.CreateTransparent(new Color(0.80f, 0.96f, 1f, 0.20f));
 
             var collisionInterior = new GameObject("Collision Interior");
             collisionInterior.transform.SetParent(jar.transform, false);
@@ -190,35 +218,96 @@ namespace HumanGlassWatcher.Gameplay.Scene
                 new Color(0.96f, 0.54f, 0.13f));
             Object.Destroy(lid.GetComponent<Collider>());
 
+            var lidBand = CreatePrimitive(
+                "Lid Grip Band",
+                PrimitiveType.Cylinder,
+                lid.transform,
+                new Vector3(0f, -0.62f, 0f),
+                new Vector3(1.02f, 0.58f, 1.02f),
+                new Color(0.19f, 0.22f, 0.28f));
+            Object.Destroy(lidBand.GetComponent<Collider>());
+
             return lid.transform;
         }
 
         private static GameObject CreateResident(Transform parent)
         {
-            var resident = CreatePrimitive(
-                "Resident Target - Juniper",
+            var resident = new GameObject("Resident Target - Juniper");
+            resident.transform.SetParent(parent, false);
+            resident.transform.localPosition = new Vector3(1.15f, 0.24f, 0.35f);
+            var residentCollider = resident.AddComponent<CapsuleCollider>();
+            residentCollider.center = new Vector3(0f, 0.96f, 0f);
+            residentCollider.radius = 0.44f;
+            residentCollider.height = 1.92f;
+
+            var placeholderVisual = new GameObject("Facing Marker");
+            placeholderVisual.transform.SetParent(resident.transform, false);
+
+            var body = CreatePrimitive(
+                "Juniper Body",
                 PrimitiveType.Capsule,
-                parent,
-                new Vector3(1.15f, 1.25f, 0.35f),
-                new Vector3(0.72f, 1.0f, 0.72f),
+                placeholderVisual.transform,
+                new Vector3(0f, 0.78f, 0f),
+                new Vector3(0.48f, 0.65f, 0.42f),
                 new Color(0.22f, 0.76f, 0.56f));
-            resident.GetComponent<Renderer>().sharedMaterial =
+            Object.Destroy(body.GetComponent<Collider>());
+            body.GetComponent<Renderer>().sharedMaterial =
                 PlaceholderMaterials.CreateOpaque(new Color(0.22f, 0.76f, 0.56f));
 
-            var face = CreatePrimitive(
-                "Facing Marker",
+            var head = CreatePrimitive(
+                "Juniper Head",
                 PrimitiveType.Sphere,
-                resident.transform,
-                new Vector3(0f, 0.44f, -0.65f),
-                new Vector3(0.16f, 0.16f, 0.16f),
+                placeholderVisual.transform,
+                new Vector3(0f, 1.78f, -0.03f),
+                new Vector3(0.43f, 0.47f, 0.42f),
+                new Color(0.76f, 0.55f, 0.40f));
+            Object.Destroy(head.GetComponent<Collider>());
+
+            CreateResidentLimb("Left Arm", placeholderVisual.transform, new Vector3(-0.48f, 0.84f, 0f), 8f);
+            CreateResidentLimb("Right Arm", placeholderVisual.transform, new Vector3(0.48f, 0.84f, 0f), -8f);
+            CreateResidentLimb("Left Leg", placeholderVisual.transform, new Vector3(-0.21f, 0.12f, 0f), 0f);
+            CreateResidentLimb("Right Leg", placeholderVisual.transform, new Vector3(0.21f, 0.12f, 0f), 0f);
+
+            var leftEye = CreatePrimitive(
+                "Left Eye",
+                PrimitiveType.Sphere,
+                placeholderVisual.transform,
+                new Vector3(-0.14f, 1.82f, -0.39f),
+                new Vector3(0.075f, 0.095f, 0.055f),
                 Ink);
-            Object.Destroy(face.GetComponent<Collider>());
+            Object.Destroy(leftEye.GetComponent<Collider>());
+            var rightEye = CreatePrimitive(
+                "Right Eye",
+                PrimitiveType.Sphere,
+                placeholderVisual.transform,
+                new Vector3(0.14f, 1.82f, -0.39f),
+                new Vector3(0.075f, 0.095f, 0.055f),
+                Ink);
+            Object.Destroy(rightEye.GetComponent<Collider>());
+
             return resident;
+        }
+
+        private static void CreateResidentLimb(
+            string limbName,
+            Transform parent,
+            Vector3 localPosition,
+            float zRotation)
+        {
+            var limb = CreatePrimitive(
+                limbName,
+                PrimitiveType.Capsule,
+                parent,
+                localPosition,
+                new Vector3(0.15f, limbName.Contains("Leg") ? 0.42f : 0.48f, 0.15f),
+                new Color(0.18f, 0.54f, 0.43f));
+            limb.transform.localRotation = Quaternion.Euler(0f, 0f, zRotation);
+            Object.Destroy(limb.GetComponent<Collider>());
         }
 
         private static InterfaceReferences CreateInterface(Transform parent)
         {
-            if (Object.FindFirstObjectByType<EventSystem>() == null)
+            if (Object.FindAnyObjectByType<EventSystem>() == null)
             {
                 var eventSystem = new GameObject("EventSystem");
                 eventSystem.transform.SetParent(parent, false);
@@ -261,6 +350,18 @@ namespace HumanGlassWatcher.Gameplay.Scene
                 TextAnchor.UpperCenter);
             SetAnchors(instruction.rectTransform, new Vector2(0f, 0.72f), new Vector2(1f, 0.72f),
                 new Vector2(20f, -24f), new Vector2(-20f, 24f));
+
+            var combinationBanner = CreateText(
+                "Combination Banner",
+                canvasObject.transform,
+                string.Empty,
+                18,
+                FontStyle.Bold,
+                new Color(1f, 0.76f, 0.26f),
+                TextAnchor.MiddleCenter);
+            SetAnchors(combinationBanner.rectTransform, new Vector2(0.18f, 0.57f), new Vector2(0.82f, 0.66f),
+                Vector2.zero, Vector2.zero);
+            combinationBanner.gameObject.SetActive(false);
 
             var searchPanel = CreateImage(
                 "Search Panel",
@@ -321,12 +422,23 @@ namespace HumanGlassWatcher.Gameplay.Scene
             var residentCaption = CreateText(
                 "Resident Caption",
                 canvasObject.transform,
-                "JUNIPER  •  FICTIONAL ADULT  •  PLACEHOLDER TARGET",
+                "JUNIPER  •  FICTIONAL ADULT  •  RESPONSIVE TARGET",
                 13,
                 FontStyle.Bold,
                 new Color(0.30f, 0.92f, 0.70f),
                 TextAnchor.MiddleRight);
             SetAnchors(residentCaption.rectTransform, new Vector2(0.45f, 0.20f), new Vector2(0.97f, 0.25f),
+                Vector2.zero, Vector2.zero);
+
+            var reactionBadge = CreateText(
+                "Resident Reaction",
+                canvasObject.transform,
+                "WATCHING",
+                15,
+                FontStyle.Bold,
+                new Color(0.74f, 0.92f, 0.86f),
+                TextAnchor.MiddleRight);
+            SetAnchors(reactionBadge.rectTransform, new Vector2(0.47f, 0.25f), new Vector2(0.97f, 0.30f),
                 Vector2.zero, Vector2.zero);
 
             searchPanel.gameObject.SetActive(false);
@@ -338,7 +450,9 @@ namespace HumanGlassWatcher.Gameplay.Scene
                 Submit = submit,
                 Cancel = cancel,
                 Feedback = feedback,
-                Affordances = affordances
+                Affordances = affordances,
+                ReactionBadge = reactionBadge,
+                CombinationBanner = combinationBanner
             };
         }
 
@@ -482,6 +596,8 @@ namespace HumanGlassWatcher.Gameplay.Scene
             public Button Cancel;
             public Text Feedback;
             public Text Affordances;
+            public Text ReactionBadge;
+            public Text CombinationBanner;
         }
     }
 }

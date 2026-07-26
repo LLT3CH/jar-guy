@@ -62,6 +62,68 @@ test("HTTP contract errors are structured and fail closed", async () => {
   });
 });
 
+test("mock HTTP voice pipeline transcribes, converses with context, and returns WAV speech", async () => {
+  await withServer(async (baseUrl) => {
+    const transcriptionResponse = await fetch(`${baseUrl}/v1/voice/transcribe`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-client-id": "voice_test" },
+      body: JSON.stringify({
+        contractVersion: 1,
+        audioBase64: "UklGRg==",
+        mimeType: "audio/wav",
+        durationSeconds: 0.25,
+        language: "en"
+      })
+    });
+    assert.equal(transcriptionResponse.status, 200);
+    const transcription = await transcriptionResponse.json();
+    assert.equal(transcription.transcript, "Hello in there.");
+
+    const dialogueResponse = await fetch(`${baseUrl}/v1/dialogue/turn`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-client-id": "voice_test" },
+      body: JSON.stringify({
+        contractVersion: 1,
+        turnId: "voice_turn_1",
+        playerMessage: transcription.transcript,
+        residentState: "Alert and listening.",
+        conversationContext: {
+          residentId: "resident_1",
+          personality: "Wry, curious, and cautious.",
+          memorySummary: "The player previously offered water.",
+          recentTurns: []
+        },
+        knownEntityIds: ["resident_1"],
+        legalActions: [{
+          actionId: "speak_reply",
+          verb: "speak",
+          targetEntityIds: ["resident_1"],
+          utilityHint: 50,
+          reasonCode: "conversation_reply"
+        }]
+      })
+    });
+    assert.equal(dialogueResponse.status, 200);
+    const dialogue = await dialogueResponse.json();
+    assert.equal(dialogue.selectedActionId, "speak_reply");
+    assert.match(dialogue.spokenLine, /heard you/i);
+
+    const speechResponse = await fetch(`${baseUrl}/v1/voice/synthesize`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-client-id": "voice_test" },
+      body: JSON.stringify({
+        contractVersion: 1,
+        text: dialogue.spokenLine,
+        voiceId: "resident_default"
+      })
+    });
+    assert.equal(speechResponse.status, 200);
+    const speech = await speechResponse.json();
+    assert.equal(Buffer.from(speech.audioBase64, "base64").subarray(0, 4).toString("ascii"), "RIFF");
+    assert.equal(speech.mimeType, "audio/wav");
+  });
+});
+
 test("in-memory rate limiter provides an injectable enforcement seam", () => {
   let now = 1000;
   const limiter = new MemoryRateLimiter({

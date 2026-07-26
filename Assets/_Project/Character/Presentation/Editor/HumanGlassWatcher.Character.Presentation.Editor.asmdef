@@ -1,0 +1,19 @@
+{
+  "name": "HumanGlassWatcher.Character.Presentation.Editor",
+  "rootNamespace": "HumanGlassWatcher.Character.Presentation.Editor",
+  "references": [
+    "HumanGlassWatcher.Character",
+    "HumanGlassWatcher.Character.Presentation"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

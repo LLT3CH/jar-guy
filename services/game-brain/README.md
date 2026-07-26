@@ -1,6 +1,6 @@
 # Game Brain service
 
-A dependency-light Node service for the vertical slice. It uses Node built-ins only and starts with deterministic mock providers, so no install step or cloud credential is required.
+A dependency-light Node service for the vertical slice. It uses Node built-ins only and starts with deterministic mock providers, so no install step or cloud credential is required. Provider credentials stay in this server process and are never part of the Unity request contracts.
 
 ## Run
 
@@ -27,6 +27,8 @@ Run all tests:
 ```powershell
 npm.cmd test
 ```
+
+The mock voice path accepts a real microphone recording, returns a deterministic transcript and dialogue turn, then plays a short WAV cue. The cue proves capture, upload, dialogue, and playback plumbing without pretending to be synthesized speech.
 
 ## HTTP routes
 
@@ -83,11 +85,36 @@ Client-facing voice request/result shapes are versioned in `contracts/v1`. Produ
 | `GAME_BRAIN_HOST` | `127.0.0.1` |
 | `GAME_BRAIN_PORT` | `8787` |
 | `GAME_BRAIN_PROVIDER` | `mock` |
-| `GAME_BRAIN_PROVIDER_TIMEOUT_MS` | `1500` |
+| `GAME_BRAIN_PROVIDER_TIMEOUT_MS` | `1500` in mock mode; `20000` in OpenAI mode |
 | `GAME_BRAIN_CACHE_TTL_MS` | `300000` |
 | `GAME_BRAIN_CACHE_MAX_ENTRIES` | `500` |
 | `GAME_BRAIN_RATE_LIMIT_WINDOW_MS` | `60000` |
 | `GAME_BRAIN_RATE_LIMIT_MAX_REQUESTS` | `120` |
 | `GAME_BRAIN_MAX_BODY_BYTES` | `2100000` |
 
-Only `mock` is implemented in this foundation. Selecting another provider fails at startup instead of silently falling back to a partially configured cloud adapter.
+### Real OpenAI voice/conversation mode
+
+Set the provider and key only in the service environment:
+
+```powershell
+$env:GAME_BRAIN_PROVIDER = 'openai'
+$env:OPENAI_API_KEY = '<server-side key>'
+npm.cmd start
+```
+
+Optional server-side settings:
+
+| Environment variable | Default |
+| --- | --- |
+| `OPENAI_BASE_URL` | `https://api.openai.com/v1` |
+| `OPENAI_DIALOGUE_MODEL` | `gpt-5.6-luna` |
+| `OPENAI_REASONING_EFFORT` | `low` |
+| `OPENAI_TRANSCRIPTION_MODEL` | `gpt-4o-transcribe` |
+| `OPENAI_TTS_MODEL` | `gpt-4o-mini-tts` |
+| `OPENAI_TTS_VOICE` | `cedar` |
+| `OPENAI_TTS_INSTRUCTIONS` | concise fictional-adult delivery |
+| `OPENAI_SAFETY_IDENTIFIER` | empty |
+
+OpenAI mode uses multipart transcription, strict JSON-schema dialogue through the Responses API, and WAV speech synthesis. The client-supplied `voiceId` is advisory only: the server always applies its configured voice. Missing `OPENAI_API_KEY`, unsupported provider names, malformed provider JSON, unsafe output, and timeouts fail closed rather than silently downgrading a requested real-provider run.
+
+The checked-in tests stub network calls; they verify endpoint shapes, authorization placement, strict schema configuration, server-owned voice selection, and safe errors without making billable requests.

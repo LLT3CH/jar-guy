@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://humanglasswatcher.game/contracts/v1/conversation-context.schema.json",
+  "title": "ConversationContext",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "residentId",
+    "personality",
+    "memorySummary",
+    "recentTurns"
+  ],
+  "properties": {
+    "residentId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,64}$"
+    },
+    "personality": {
+      "type": "string",
+      "maxLength": 1000
+    },
+    "memorySummary": {
+      "type": "string",
+      "maxLength": 2000
+    },
+    "recentTurns": {
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["speaker", "text"],
+        "properties": {
+          "speaker": {
+            "enum": ["player", "resident"]
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 500
+          }
+        }
+      }
+    }
+  }
+}

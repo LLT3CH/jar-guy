@@ -3,6 +3,21 @@
   "turnId": "turn_42",
   "playerMessage": "Want to play?",
   "residentState": "Curious, energetic, and holding the rubber ball.",
+  "conversationContext": {
+    "residentId": "resident_1",
+    "personality": "Warm, playful, curious, and mildly suspicious of sudden gifts.",
+    "memorySummary": "The player has been gentle and previously supplied water.",
+    "recentTurns": [
+      {
+        "speaker": "player",
+        "text": "How are you feeling?"
+      },
+      {
+        "speaker": "resident",
+        "text": "Restless, but better now that I have water."
+      }
+    ]
+  },
   "knownEntityIds": ["resident_1", "ball_7"],
   "legalActions": [
     {

@@ -1,0 +1,23 @@
+{
+  "name": "HumanGlassWatcher.Voice.Tests",
+  "rootNamespace": "HumanGlassWatcher.Voice.Tests",
+  "references": [
+    "HumanGlassWatcher.Voice"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

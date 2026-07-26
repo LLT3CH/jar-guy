@@ -3,6 +3,7 @@
   "rootNamespace": "HumanGlassWatcher.Gameplay",
   "references": [
     "HumanGlassWatcher.Core",
+    "HumanGlassWatcher.Character.Presentation",
     "Unity.InputSystem",
     "Unity.InputSystem.ForUI",
     "UnityEngine.UI"
